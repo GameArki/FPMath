@@ -4,9 +4,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - [Develop]: https://github.com/chenwansal/JackFrame  
-## [Develop]
 
-## [1.0.0] - 2022-08-22
+## [Develop]
+## [0.2.0] - 2022-11-08
+### Added
+- 四叉树(未测试)  
+
+## [0.1.0] - 2022-08-22
 ### Added
 - establish  
 
