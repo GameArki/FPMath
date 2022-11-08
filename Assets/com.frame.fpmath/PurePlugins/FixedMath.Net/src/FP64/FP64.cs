@@ -988,10 +988,10 @@ namespace FixMath.NET {
         }
 
         internal static void GenerateSinLut() {
-            using (var writer = new StreamWriter("Fix64SinLut.cs")) {
+            using (var writer = new StreamWriter("FP64SinLut.cs")) {
                 writer.Write(
 @"namespace FixMath.NET {
-    partial struct Fix64 {
+    partial struct FP64 {
         public static readonly long[] SinLut = new[] {");
                 int lineCounter = 0;
                 for (int i = 0; i < LUT_SIZE; ++i) {
@@ -1013,10 +1013,10 @@ namespace FixMath.NET {
         }
 
         internal static void GenerateTanLut() {
-            using (var writer = new StreamWriter("Fix64TanLut.cs")) {
+            using (var writer = new StreamWriter("FP64TanLut.cs")) {
                 writer.Write(
 @"namespace FixMath.NET {
-    partial struct Fix64 {
+    partial struct FP64 {
         public static readonly long[] TanLut = new[] {");
                 int lineCounter = 0;
                 for (int i = 0; i < LUT_SIZE; ++i) {
