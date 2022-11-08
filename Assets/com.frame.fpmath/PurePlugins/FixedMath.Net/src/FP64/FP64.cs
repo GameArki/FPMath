@@ -22,6 +22,7 @@ namespace FixMath.NET {
         public static readonly FP64 Three = (FP64)3;
         public static readonly FP64 Zero = new FP64();
         public static readonly FP64 Half = One / Two;
+        public static readonly FP64 Quarter = Half * Half;
         public static readonly FP64 C0p25 = (FP64)0.25m;
         public static readonly FP64 C0p28 = (FP64)0.28m;
         public static readonly FP64 EN1 = (FP64)1 / (FP64)10;
