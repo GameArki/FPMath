@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace FixMath.NET {
@@ -9,10 +10,11 @@ namespace FixMath.NET {
         Ptr_FPQuadTree treePtr;
         FPQuadTree<T> Tree => treePtr as FPQuadTree<T>;
 
-        object valuePtr;
-        public T Value => (T)valuePtr;
+        T valuePtr;
+        public T Value => valuePtr;
 
         FPBounds2 bounds;
+        public FPBounds2 Bounds => bounds;
 
         int depth;
         public int Depth => depth;
@@ -36,20 +38,30 @@ namespace FixMath.NET {
             this.children = new List<FPQuadTreeNode<T>>(CHILDREN_COUNT);
         }
 
-        void SetAsLeaf(object valuePtr) {
+        internal void Traval(Action<FPQuadTreeNode<T>> action) {
+
+            action.Invoke(this);
+
+            if (isSplit) {
+                bl.Traval(action);
+                br.Traval(action);
+                tl.Traval(action);
+                tr.Traval(action);
+            } else {
+                children.ForEach(action);
+            }
+        }
+
+        void SetAsLeaf(T valuePtr) {
             this.valuePtr = valuePtr;
         }
 
-        void SetAsBranch() {
-            this.valuePtr = null;
-        }
-
-        bool IsLeaf() {
+        public bool IsLeaf() {
             return this.valuePtr != null;
         }
 
         // ==== Insert ====
-        internal void Insert(object valuePtr, in FPBounds2 bounds) {
+        internal void Insert(T valuePtr, in FPBounds2 bounds) {
 
             int nextDepth = depth + 1;
 
@@ -62,10 +74,8 @@ namespace FixMath.NET {
 
         void InsertNode(FPQuadTreeNode<T> node) {
 
-            SetAsBranch();
-
             // 层级已满时, 不再分割, 直接添加到 children
-            if (depth >= Tree.MaxDepth) {
+            if (depth >= Tree.MaxDepth || node.depth >= Tree.MaxDepth) {
                 children.Add(node);
                 return;
             }
@@ -110,21 +120,21 @@ namespace FixMath.NET {
             if (children.Count == CHILDREN_COUNT) {
 
                 int nextDepth = depth + 1;
-                var quarter = bounds.size * FP64.Quarter;
+                var size = bounds.size * FP64.Half;
+                var halfSize = size * FP64.Half;
                 var center = bounds.center;
 
-                var blBounds = new FPBounds2(center - quarter, quarter);
-                var brBounds = new FPBounds2(new FPVector2(center.x + quarter.x, center.y - quarter.y), quarter);
-                var tlBounds = new FPBounds2(new FPVector2(center.x - quarter.x, center.y + quarter.y), quarter);
-                var trBounds = new FPBounds2(center + quarter, quarter);
+                var blBounds = new FPBounds2(center - halfSize, size);
+                var brBounds = new FPBounds2(new FPVector2(center.x + halfSize.x, center.y - halfSize.y), size);
+                var tlBounds = new FPBounds2(new FPVector2(center.x - halfSize.x, center.y + halfSize.y), size);
+                var trBounds = new FPBounds2(center + halfSize, size);
 
                 bl = new FPQuadTreeNode<T>(treePtr, blBounds, nextDepth);
                 br = new FPQuadTreeNode<T>(treePtr, brBounds, nextDepth);
                 tl = new FPQuadTreeNode<T>(treePtr, tlBounds, nextDepth);
                 tr = new FPQuadTreeNode<T>(treePtr, trBounds, nextDepth);
 
-                for (int i = 0; i < children.Count; i++) {
-                    var child = children[i];
+                children.ForEach(child => {
                     var childBounds = child.bounds;
                     if (bl.IsIntersectOrContains(childBounds)) {
                         bl.InsertNode(child);
@@ -138,7 +148,7 @@ namespace FixMath.NET {
                     if (tr.IsIntersectOrContains(childBounds)) {
                         tr.InsertNode(child);
                     }
-                }
+                });
 
                 children.Clear();
 

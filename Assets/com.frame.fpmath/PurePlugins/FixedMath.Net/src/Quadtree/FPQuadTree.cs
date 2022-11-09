@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace FixMath.NET {
@@ -11,6 +12,7 @@ namespace FixMath.NET {
         public int MaxDepth => maxDepth;
 
         FPQuadTreeNode<T> root;
+        public FPQuadTreeNode<T> Root => root;
 
         public FPQuadTree(FP64 worldWidth, FP64 worldHeight, int maxDepth) {
             this.maxDepth = maxDepth;
@@ -19,7 +21,11 @@ namespace FixMath.NET {
             this.root = new FPQuadTreeNode<T>(this, bounds, 0);
         }
 
-        public void Insert(object valuePtr, in FPBounds2 bounds) {
+        public void Traval(Action<FPQuadTreeNode<T>> action) {
+            root.Traval(action);
+        }
+
+        public void Insert(T valuePtr, in FPBounds2 bounds) {
             this.root.Insert(valuePtr, bounds);
         }
 

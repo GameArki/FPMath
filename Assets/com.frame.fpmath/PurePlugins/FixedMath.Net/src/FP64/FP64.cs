@@ -937,16 +937,6 @@ namespace FixMath.NET {
         public static explicit operator long(FP64 value) {
             return value.RawValue >> FRACTIONAL_PLACES;
         }
-        // public static explicit operator FP64(float value) {
-        //     return new FP64((long)(value * ONE));
-        // }
-
-        // public static implicit operator FP64(float value) {
-        //     FP64 result;
-        //     result.RawValue = (long)(value * ONE);
-        //     return result;
-        //     //return new FP((long)(value * ONE));
-        // }
 
         public static explicit operator float(FP64 value) {
             return (float)value.RawValue / ONE;
@@ -962,6 +952,10 @@ namespace FixMath.NET {
         }
         public static explicit operator decimal(FP64 value) {
             return (decimal)value.RawValue / ONE;
+        }
+
+        public static FP64 ToFP64(float value) {
+            return new FP64((long)(value * ONE));
         }
 
         public override bool Equals(object obj) {
