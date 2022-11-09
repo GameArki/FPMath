@@ -31,6 +31,10 @@ namespace FixMath.NET {
                    this.min.y >= other.min.y && this.max.y <= other.max.y);
         }
 
+        public string ToFullString() {
+            return $"center: {center.ToString()}, size: {size.ToString()}, min: {min.ToString()}, max: {max.ToString()}";
+        }
+
     }
 
 }
