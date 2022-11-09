@@ -29,7 +29,7 @@ namespace FixMath.NET {
             this.root.Insert(valuePtr, bounds);
         }
 
-        public void GetCandidates(in FPBounds2 bounds, List<T> candidates) {
+        public void GetCandidates(in FPBounds2 bounds, List<FPQuadTreeNode<T>> candidates) {
             this.root.GetCandidates(bounds, candidates);
         }
 

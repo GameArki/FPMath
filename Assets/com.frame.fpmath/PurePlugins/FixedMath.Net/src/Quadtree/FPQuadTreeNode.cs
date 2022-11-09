@@ -10,8 +10,8 @@ namespace FixMath.NET {
         Ptr_FPQuadTree treePtr;
         FPQuadTree<T> Tree => treePtr as FPQuadTree<T>;
 
-        T valuePtr;
-        public T Value => valuePtr;
+        object valuePtr;
+        public T Value => (T)valuePtr;
 
         FPBounds2 bounds;
         public FPBounds2 Bounds => bounds;
@@ -56,8 +56,12 @@ namespace FixMath.NET {
             this.valuePtr = valuePtr;
         }
 
+        void SetAsBranch() {
+            this.valuePtr = null;
+        }
+
         public bool IsLeaf() {
-            return this.valuePtr != null;
+            return valuePtr != null;
         }
 
         // ==== Insert ====
@@ -67,6 +71,8 @@ namespace FixMath.NET {
 
             var node = new FPQuadTreeNode<T>(treePtr, bounds, nextDepth);
             node.SetAsLeaf(valuePtr);
+
+            SetAsBranch();
 
             InsertNode(node);
 
@@ -165,15 +171,15 @@ namespace FixMath.NET {
         }
 
         // ==== Query ====
-        internal void GetCandidates(in FPBounds2 bounds, List<T> candidates) {
-
-            if (!IsIntersectOrContains(bounds)) {
-                return;
-            }
+        internal void GetCandidates(in FPBounds2 bounds, List<FPQuadTreeNode<T>> candidates) {
 
             if (IsLeaf()) {
-                candidates.Add(Value);
+                candidates.Add(this);
                 return;
+            } else {
+                if (!IsIntersectOrContains(bounds)) {
+                    return;
+                }
             }
 
             if (isSplit) {
