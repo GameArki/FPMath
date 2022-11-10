@@ -22,8 +22,8 @@ namespace JackFrame.FPMath.Sample {
         FPQuadTree<string> tree;
 
         System.Random rd;
-        int width = 65535;
-        int height = 65535;
+        int width = 1000;
+        int height = 1000;
 
         int sizeMax = 100;
         int sizeMin = 1;
@@ -53,7 +53,7 @@ namespace JackFrame.FPMath.Sample {
                 var node = candidates.Find(value => (value.Bounds.Center - mousePos).LengthSquared() < 1000);
                 if (node != null) {
                     tree.Remove(node.GetFullID());
-                    tree.Insert(node.Value, new FPBounds2(mousePos, node.Bounds.Size));
+                    // tree.Insert(node.Value, new FPBounds2(mousePos, node.Bounds.Size));
                 }
 
             }

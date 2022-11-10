@@ -24,6 +24,13 @@ namespace JackFrame.FPMath {
             public const int DEPTH_SHIFT = 4;
         }
 
+        static Dictionary<byte, int> cornerToIndex = new Dictionary<byte, int>() {
+            { LocationConfig.BL, BL_INDEX },
+            { LocationConfig.BR, BR_INDEX },
+            { LocationConfig.TL, TL_INDEX },
+            { LocationConfig.TR, TR_INDEX },
+        };
+
         const int BL_INDEX = 0;
         const int BR_INDEX = 1;
         const int TL_INDEX = 2;
@@ -53,7 +60,7 @@ namespace JackFrame.FPMath {
         bool isSplit;
 
         // 存储叶
-        List<FPQuadTreeNode<T>> children;
+        Dictionary<uint, FPQuadTreeNode<T>> children;
 
         // 分割 四块分支
         FPQuadTreeNode<T>[] splitedArray; // len: 4
@@ -63,19 +70,38 @@ namespace JackFrame.FPMath {
             this.isSplit = false;
             this.bounds = bounds;
             this.depth = depth;
-            this.children = new List<FPQuadTreeNode<T>>();
+            this.children = new Dictionary<uint, FPQuadTreeNode<T>>();
             this.splitedArray = new FPQuadTreeNode<T>[4];
+        }
 
-            if (depth == 0) {
-                SetLocationID(GenLocationID(0, LocationConfig.FULL, -1));
-                onlyID = Tree.GenOnlyID();
-            }
+        internal void SetAsRoot() {
+            SetLocationID(GenBranchLocationID(0, LocationConfig.FULL, -1));
+            onlyID = Tree.GenOnlyID();
         }
 
         // ==== Generic ====
-        uint GenLocationID(uint parentLocationID, byte location, int parentDepth) {
-            uint value = parentLocationID | ((uint)location << ((parentDepth + 1) * LocationConfig.DEPTH_SHIFT));
+        uint GenBranchLocationID(uint parentLocationID, byte corner, int parentDepth) {
+            uint value = parentLocationID | ((uint)corner << ((parentDepth + 1) * LocationConfig.DEPTH_SHIFT));
             return value;
+        }
+
+        uint GenLeafLocationID(uint parentLocationID, int parentDepth) {
+            byte parentCorner = GetCornerIDFromLoactionID(parentLocationID, parentDepth);
+            uint value = parentLocationID | ((uint)parentCorner << ((parentDepth) * LocationConfig.DEPTH_SHIFT));
+            value = parentLocationID | ((uint)LocationConfig.FULL << ((parentDepth + 1) * LocationConfig.DEPTH_SHIFT));
+            return value;
+        }
+
+        byte GetCornerIDFromLoactionID(uint locationID, int depth) {
+            int shift = (depth) * LocationConfig.DEPTH_SHIFT;
+            uint loc = locationID & ((uint)LocationConfig.FULL << shift);
+            return (byte)(loc >> shift);
+        }
+
+        byte GetCornerIDFromFullID(ulong fullID, int depth) {
+            int shift = (depth) * LocationConfig.DEPTH_SHIFT;
+            ulong loc = fullID & ((ulong)LocationConfig.FULL << shift);
+            return (byte)(loc >> shift);
         }
 
         void SetAsLeaf(T valuePtr) {
@@ -88,14 +114,6 @@ namespace JackFrame.FPMath {
 
         bool IsLeaf() {
             return valuePtr != null;
-        }
-
-        bool AndNotZero(byte a, byte b) {
-            return (a & b) != 0;
-        }
-
-        int ChildrenCount() {
-            return children.Count;
         }
 
         bool IsIntersectOrContains(in FPBounds2 other) {
@@ -114,7 +132,9 @@ namespace JackFrame.FPMath {
                 }
             }
 
-            children.ForEach(action);
+            foreach (var kv in children) {
+                action.Invoke(kv.Value);
+            }
 
         }
 
@@ -135,12 +155,12 @@ namespace JackFrame.FPMath {
 
             SetAsBranch();
 
-            node.SetLocationID(GenLocationID(locationID, LocationConfig.FULL, depth));
+            node.SetLocationID(GenLeafLocationID(locationID, depth));
             node.SetDepth(depth + 1);
 
             // 层级已满时, 不再分割, 直接添加到 children
             if (depth >= Tree.MaxDepth || node.depth >= Tree.MaxDepth) {
-                children.Add(node);
+                children.Add(node.onlyID, node);
                 return;
             }
 
@@ -168,7 +188,7 @@ namespace JackFrame.FPMath {
 
             // Children 小于 4 个时, 插入
             if (children.Count < 4) {
-                children.Add(node);
+                children.Add(node.onlyID, node);
                 return;
             }
 
@@ -193,26 +213,28 @@ namespace JackFrame.FPMath {
             var trBounds = new FPBounds2(center + halfSize, size);
 
             var bl = new FPQuadTreeNode<T>(treePtr, blBounds, nextDepth);
-            bl.SetLocationID(GenLocationID(locationID, LocationConfig.BL, depth));
+            bl.SetLocationID(GenBranchLocationID(locationID, LocationConfig.BL, depth));
             bl.onlyID = Tree.GenOnlyID();
             splitedArray[BL_INDEX] = bl;
 
             var br = new FPQuadTreeNode<T>(treePtr, brBounds, nextDepth);
-            br.SetLocationID(GenLocationID(locationID, LocationConfig.BR, depth));
+            br.SetLocationID(GenBranchLocationID(locationID, LocationConfig.BR, depth));
             br.onlyID = Tree.GenOnlyID();
             splitedArray[BR_INDEX] = br;
 
             var tl = new FPQuadTreeNode<T>(treePtr, tlBounds, nextDepth);
-            tl.SetLocationID(GenLocationID(locationID, LocationConfig.TL, depth));
+            tl.SetLocationID(GenBranchLocationID(locationID, LocationConfig.TL, depth));
             tl.onlyID = Tree.GenOnlyID();
             splitedArray[TL_INDEX] = tl;
 
             var tr = new FPQuadTreeNode<T>(treePtr, trBounds, nextDepth);
-            tr.SetLocationID(GenLocationID(locationID, LocationConfig.TR, depth));
+            tr.SetLocationID(GenBranchLocationID(locationID, LocationConfig.TR, depth));
             tr.onlyID = Tree.GenOnlyID();
             splitedArray[TR_INDEX] = tr;
 
-            children.ForEach(child => {
+            foreach (var kv in children) {
+
+                var child = kv.Value;
                 var childBounds = child.bounds;
 
                 var corner = splitedArray[BL_INDEX];
@@ -235,7 +257,7 @@ namespace JackFrame.FPMath {
                     corner.InsertNode(child);
                 }
 
-            });
+            }
 
             children.Clear();
 
@@ -243,20 +265,10 @@ namespace JackFrame.FPMath {
 
         }
 
-        byte GetCornerID(ulong targetFullID, int depth) {
-
-            int shift = (depth) * LocationConfig.DEPTH_SHIFT;
-
-            ulong loc = targetFullID & ((ulong)LocationConfig.FULL << shift);
-
-            return (byte)(loc >> shift);
-
-        }
-
         // ==== Remove ====
-        internal void Remove(ulong targetFullID, int depth) {
+        internal void RemoveNode(ulong targetFullID, int depth) {
 
-            byte targetCornerID = GetCornerID(targetFullID, depth);
+            byte targetCornerID = GetCornerIDFromFullID(targetFullID, depth);
             if (targetCornerID == LocationConfig.NONE || targetCornerID > LocationConfig.FULL) {
                 return;
             }
@@ -264,24 +276,20 @@ namespace JackFrame.FPMath {
             uint targetOnlyID = (uint)(targetFullID >> 32);
 
             if (isSplit) {
+                // TODO: Only Remove One Of Corner
                 for (int i = 0; i < splitedArray.Length; i += 1) {
                     var corner = splitedArray[i];
-                    if (corner != null) {
-                        if (corner.IsLeaf()) {
-                            if (corner.onlyID == targetOnlyID) {
-                                corner.SetAsBranch();
-                            }
-                        } else {
-                            corner.Remove(targetFullID, depth + 1);
-                        }
+                    if (corner == null) {
+                        continue;
                     }
+                    corner.RemoveNode(targetFullID, depth + 1);
                 }
             }
 
-            int index = children.FindIndex(value => value.onlyID == targetOnlyID);
-            if (index != -1) {
-                children.RemoveAt(index);
-            }
+            bool hasRemove = children.Remove(targetOnlyID);
+            // if (hasRemove) {
+            //     System.Console.WriteLine(onlyID + "Remove Full: " + targetOnlyID + ", Depth: " + depth + ", Corner:" + targetCornerID + ", index: " + splitIndex);
+            // }
 
         }
 
@@ -305,8 +313,8 @@ namespace JackFrame.FPMath {
                     }
                 }
             } else {
-                for (int i = 0; i < children.Count; i += 1) {
-                    var child = children[i];
+                foreach (var kv in children) {
+                    var child = kv.Value;
                     child.GetCandidates(bounds, candidates);
                 }
             }
