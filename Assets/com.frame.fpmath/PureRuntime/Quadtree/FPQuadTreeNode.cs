@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using FixMath.NET;
 
-namespace FixMath.NET {
+namespace JackFrame.FPMath {
 
     // 插入: 按 Bounds 插入
     // 移除: 按 FullID 移除

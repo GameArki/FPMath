@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using FixMath.NET;
 
-namespace FixMath.NET {
+namespace JackFrame.FPMath {
 
     internal interface Ptr_FPQuadTree {}
 
@@ -14,7 +15,7 @@ namespace FixMath.NET {
         uint onlyIDRecord;
 
         FPQuadTreeNode<T> root;
-        public FPQuadTreeNode<T> Root => root;
+        internal FPQuadTreeNode<T> Root => root;
 
         public FPQuadTree(FP64 worldWidth, FP64 worldHeight, int maxDepth) {
             if (maxDepth > 8) {
@@ -26,11 +27,7 @@ namespace FixMath.NET {
             this.root = new FPQuadTreeNode<T>(this, bounds, 0);
         }
 
-        internal uint GenOnlyID() {
-            onlyIDRecord += 1;
-            return onlyIDRecord;
-        }
-
+        // ==== API ====
         public void Traval(Action<FPQuadTreeNode<T>> action) {
             root.Traval(action);
         }
@@ -45,6 +42,12 @@ namespace FixMath.NET {
 
         public void GetCandidates(in FPBounds2 bounds, List<FPQuadTreeNode<T>> candidates) {
             this.root.GetCandidates(bounds, candidates);
+        }
+
+        // ==== Internal ====
+        internal uint GenOnlyID() {
+            onlyIDRecord += 1;
+            return onlyIDRecord;
         }
 
     }

@@ -1,8 +1,7 @@
 {
-    "name": "JackFrame.FPMath.Sample",
+    "name": "JackFrame.FPMath",
     "rootNamespace": "",
     "references": [
-        "GUID:4f555960a24a1c2439d9501259657a20",
         "GUID:456740c386b308542be128e7c798eefb"
     ],
     "includePlatforms": [],
@@ -11,9 +10,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [
-        "UNITY_EDITOR"
-    ],
+    "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": false
+    "noEngineReferences": true
 }
