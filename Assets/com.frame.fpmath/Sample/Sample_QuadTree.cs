@@ -50,10 +50,10 @@ namespace JackFrame.FPMath.Sample {
             }
 
             if (Input.GetMouseButtonDown(2)) {
-                var node = candidates.Find(value => (value.Bounds.center - mousePos).LengthSquared() < 1000);
+                var node = candidates.Find(value => (value.Bounds.Center - mousePos).LengthSquared() < 1000);
                 if (node != null) {
                     tree.Remove(node.GetFullID());
-                    tree.Insert(node.Value, new FPBounds2(mousePos, node.Bounds.size));
+                    tree.Insert(node.Value, new FPBounds2(mousePos, node.Bounds.Size));
                 }
 
             }
@@ -70,8 +70,8 @@ namespace JackFrame.FPMath.Sample {
 
             Gizmos.color = Color.red;
             tree.Traval(value => {
-                var center = value.Bounds.center;
-                var size = value.Bounds.size;
+                var center = value.Bounds.Center;
+                var size = value.Bounds.Size;
                 Gizmos.DrawWireCube(new Vector3(center.x.AsFloat(), center.y.AsFloat()), new Vector3(size.x.AsFloat(), size.y.AsFloat()));
             });
 
@@ -84,8 +84,8 @@ namespace JackFrame.FPMath.Sample {
 
             Gizmos.color = Color.green;
             candidates.ForEach(value => {
-                var center = value.Bounds.center;
-                var size = value.Bounds.size;
+                var center = value.Bounds.Center;
+                var size = value.Bounds.Size;
                 Gizmos.DrawWireCube(new Vector3(center.x.AsFloat(), center.y.AsFloat()), new Vector3(size.x.AsFloat(), size.y.AsFloat()));
             });
 

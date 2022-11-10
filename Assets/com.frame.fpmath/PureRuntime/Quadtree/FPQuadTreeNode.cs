@@ -183,9 +183,9 @@ namespace JackFrame.FPMath {
         void Split() {
 
             int nextDepth = depth + 1;
-            var size = bounds.size * FP64.Half;
+            var size = bounds.Size * FP64.Half;
             var halfSize = size * FP64.Half;
-            var center = bounds.center;
+            var center = bounds.Center;
 
             var blBounds = new FPBounds2(center - halfSize, size);
             var brBounds = new FPBounds2(new FPVector2(center.x + halfSize.x, center.y - halfSize.y), size);

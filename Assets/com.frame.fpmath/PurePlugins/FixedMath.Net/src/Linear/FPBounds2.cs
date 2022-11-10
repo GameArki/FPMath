@@ -2,21 +2,16 @@ namespace FixMath.NET {
 
     public struct FPBounds2 {
 
-        public FPVector2 center;
-        public FPVector2 size;
-
         public FPVector2 min;
         public FPVector2 max;
 
+        public FPVector2 Center => (min + max) * FP64.Half;
+        public FPVector2 Size => max - min;
+
         public FPBounds2(in FPVector2 center, in FPVector2 size) {
-
-            this.center = center;
-            this.size = size;
-
             var half = size * FP64.Half;
             this.min = center - half;
             this.max = center + half;
-
         }
 
         public bool IsIntersectOrContains(in FPBounds2 other) {
@@ -36,7 +31,7 @@ namespace FixMath.NET {
         }
 
         public string ToFullString() {
-            return $"center: {center.ToString()}, size: {size.ToString()}, min: {min.ToString()}, max: {max.ToString()}";
+            return $"center: {Center.ToString()}, size: {Size.ToString()}, min: {min.ToString()}, max: {max.ToString()}";
         }
 
     }
