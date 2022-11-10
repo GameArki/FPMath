@@ -3,12 +3,41 @@ using System.Collections.Generic;
 
 namespace FixMath.NET {
 
+    // 插入: 按 Bounds 插入
+    // 移除: 按 FullID 移除
+    // 查询: 按 Bounds 查询
+    // 遍历: 全遍历
     public class FPQuadTreeNode<T> {
 
-        const int CHILDREN_COUNT = 4;
+        // ==== Define ====
+        static class LocationConfig {
+            // 3 4
+            // 1 2
+            public const byte NONE = 0b0000;
+            public const byte BL = 0b0001;
+            public const byte BR = 0b0010;
+            public const byte TL = 0b0100;
+            public const byte TR = 0b1000;
+            public const byte FULL = 0b1111;
 
+            public const int DEPTH_SHIFT = 4;
+        }
+
+        const int BL_INDEX = 0;
+        const int BR_INDEX = 1;
+        const int TL_INDEX = 2;
+        const int TR_INDEX = 3;
+
+        // ==== External ====
         Ptr_FPQuadTree treePtr;
         FPQuadTree<T> Tree => treePtr as FPQuadTree<T>;
+
+        // ==== Info ====
+        uint locationID;
+        public void SetLocationID(uint value) => locationID = value;
+
+        uint onlyID;
+        public ulong GetFullID() => ((ulong)onlyID << 32) | (ulong)locationID;
 
         object valuePtr;
         public T Value => (T)valuePtr;
@@ -18,38 +47,34 @@ namespace FixMath.NET {
 
         int depth;
         public int Depth => depth;
+        public void SetDepth(int value) => depth = value;
 
         bool isSplit;
 
-        // 分割前, 无序
+        // 存储叶
         List<FPQuadTreeNode<T>> children;
 
-        // 分割后, 有序
-        FPQuadTreeNode<T> bl;
-        FPQuadTreeNode<T> br;
-        FPQuadTreeNode<T> tl;
-        FPQuadTreeNode<T> tr;
+        // 分割 四块分支
+        FPQuadTreeNode<T>[] splitedArray; // len: 4
 
         internal FPQuadTreeNode(Ptr_FPQuadTree tree, in FPBounds2 bounds, int depth) {
             this.treePtr = tree;
             this.isSplit = false;
             this.bounds = bounds;
             this.depth = depth;
-            this.children = new List<FPQuadTreeNode<T>>(CHILDREN_COUNT);
+            this.children = new List<FPQuadTreeNode<T>>();
+            this.splitedArray = new FPQuadTreeNode<T>[4];
+
+            if (depth == 0) {
+                SetLocationID(GenLocationID(0, LocationConfig.FULL, -1));
+                onlyID = Tree.GenOnlyID();
+            }
         }
 
-        internal void Traval(Action<FPQuadTreeNode<T>> action) {
-
-            action.Invoke(this);
-
-            if (isSplit) {
-                bl.Traval(action);
-                br.Traval(action);
-                tl.Traval(action);
-                tr.Traval(action);
-            } else {
-                children.ForEach(action);
-            }
+        // ==== Generic ====
+        uint GenLocationID(uint parentLocationID, byte location, int parentDepth) {
+            uint value = parentLocationID | ((uint)location << ((parentDepth + 1) * LocationConfig.DEPTH_SHIFT));
+            return value;
         }
 
         void SetAsLeaf(T valuePtr) {
@@ -60,8 +85,36 @@ namespace FixMath.NET {
             this.valuePtr = null;
         }
 
-        public bool IsLeaf() {
+        bool IsLeaf() {
             return valuePtr != null;
+        }
+
+        bool AndNotZero(byte a, byte b) {
+            return (a & b) != 0;
+        }
+
+        int ChildrenCount() {
+            return children.Count;
+        }
+
+        bool IsIntersectOrContains(in FPBounds2 other) {
+            return bounds.IsIntersect(other) || bounds.IsContains(other);
+        }
+
+        // ==== Traval ====
+        internal void Traval(Action<FPQuadTreeNode<T>> action) {
+
+            action.Invoke(this);
+
+            for (int i = 0; i < splitedArray.Length; i += 1) {
+                var corner = splitedArray[i];
+                if (corner != null) {
+                    corner.Traval(action);
+                }
+            }
+
+            children.ForEach(action);
+
         }
 
         // ==== Insert ====
@@ -70,15 +123,19 @@ namespace FixMath.NET {
             int nextDepth = depth + 1;
 
             var node = new FPQuadTreeNode<T>(treePtr, bounds, nextDepth);
+            node.onlyID = Tree.GenOnlyID();
             node.SetAsLeaf(valuePtr);
-
-            SetAsBranch();
 
             InsertNode(node);
 
         }
 
         void InsertNode(FPQuadTreeNode<T> node) {
+
+            SetAsBranch();
+
+            node.SetLocationID(GenLocationID(locationID, LocationConfig.FULL, depth));
+            node.SetDepth(depth + 1);
 
             // 层级已满时, 不再分割, 直接添加到 children
             if (depth >= Tree.MaxDepth || node.depth >= Tree.MaxDepth) {
@@ -97,77 +154,134 @@ namespace FixMath.NET {
         void InsertNodeWhenSplit(FPQuadTreeNode<T> node) {
             ref var nodeBounds = ref node.bounds;
 
-            if (bl.IsIntersectOrContains(nodeBounds)) {
-                bl.InsertNode(node);
+            for (int i = 0; i < splitedArray.Length; i += 1) {
+                var corner = splitedArray[i];
+                if (corner != null && corner.IsIntersectOrContains(nodeBounds)) {
+                    corner.InsertNode(node);
+                }
             }
 
-            if (br.IsIntersectOrContains(nodeBounds)) {
-                br.InsertNode(node);
-            }
-
-            if (tl.IsIntersectOrContains(nodeBounds)) {
-                tl.InsertNode(node);
-            }
-
-            if (tr.IsIntersectOrContains(nodeBounds)) {
-                tr.InsertNode(node);
-            }
         }
 
         void InsertNodeWhenNotSplit(FPQuadTreeNode<T> node) {
 
             // Children 小于 4 个时, 插入
-            if (children.Count < CHILDREN_COUNT) {
+            if (children.Count < 4) {
                 children.Add(node);
                 return;
             }
 
             // Children 等于 4 个时, 首次分割
-            if (children.Count == CHILDREN_COUNT) {
-
-                int nextDepth = depth + 1;
-                var size = bounds.size * FP64.Half;
-                var halfSize = size * FP64.Half;
-                var center = bounds.center;
-
-                var blBounds = new FPBounds2(center - halfSize, size);
-                var brBounds = new FPBounds2(new FPVector2(center.x + halfSize.x, center.y - halfSize.y), size);
-                var tlBounds = new FPBounds2(new FPVector2(center.x - halfSize.x, center.y + halfSize.y), size);
-                var trBounds = new FPBounds2(center + halfSize, size);
-
-                bl = new FPQuadTreeNode<T>(treePtr, blBounds, nextDepth);
-                br = new FPQuadTreeNode<T>(treePtr, brBounds, nextDepth);
-                tl = new FPQuadTreeNode<T>(treePtr, tlBounds, nextDepth);
-                tr = new FPQuadTreeNode<T>(treePtr, trBounds, nextDepth);
-
-                children.ForEach(child => {
-                    var childBounds = child.bounds;
-                    if (bl.IsIntersectOrContains(childBounds)) {
-                        bl.InsertNode(child);
-                    }
-                    if (br.IsIntersectOrContains(childBounds)) {
-                        br.InsertNode(child);
-                    }
-                    if (tl.IsIntersectOrContains(childBounds)) {
-                        tl.InsertNode(child);
-                    }
-                    if (tr.IsIntersectOrContains(childBounds)) {
-                        tr.InsertNode(child);
-                    }
-                });
-
-                children.Clear();
-
-                isSplit = true;
-
+            if (children.Count == 4) {
+                Split();
                 InsertNodeWhenSplit(node);
-
             }
 
         }
 
-        bool IsIntersectOrContains(in FPBounds2 other) {
-            return bounds.IsIntersect(other) || bounds.IsContains(other);
+        void Split() {
+
+            int nextDepth = depth + 1;
+            var size = bounds.size * FP64.Half;
+            var halfSize = size * FP64.Half;
+            var center = bounds.center;
+
+            var blBounds = new FPBounds2(center - halfSize, size);
+            var brBounds = new FPBounds2(new FPVector2(center.x + halfSize.x, center.y - halfSize.y), size);
+            var tlBounds = new FPBounds2(new FPVector2(center.x - halfSize.x, center.y + halfSize.y), size);
+            var trBounds = new FPBounds2(center + halfSize, size);
+
+            var bl = new FPQuadTreeNode<T>(treePtr, blBounds, nextDepth);
+            bl.SetLocationID(GenLocationID(locationID, LocationConfig.BL, depth));
+            bl.onlyID = Tree.GenOnlyID();
+            splitedArray[BL_INDEX] = bl;
+
+            var br = new FPQuadTreeNode<T>(treePtr, brBounds, nextDepth);
+            br.SetLocationID(GenLocationID(locationID, LocationConfig.BR, depth));
+            br.onlyID = Tree.GenOnlyID();
+            splitedArray[BR_INDEX] = br;
+
+            var tl = new FPQuadTreeNode<T>(treePtr, tlBounds, nextDepth);
+            tl.SetLocationID(GenLocationID(locationID, LocationConfig.TL, depth));
+            tl.onlyID = Tree.GenOnlyID();
+            splitedArray[TL_INDEX] = tl;
+
+            var tr = new FPQuadTreeNode<T>(treePtr, trBounds, nextDepth);
+            tr.SetLocationID(GenLocationID(locationID, LocationConfig.TR, depth));
+            tr.onlyID = Tree.GenOnlyID();
+            splitedArray[TR_INDEX] = tr;
+
+            children.ForEach(child => {
+                var childBounds = child.bounds;
+
+                var corner = splitedArray[BL_INDEX];
+                if (corner.IsIntersectOrContains(childBounds)) {
+                    corner.InsertNode(child);
+                }
+
+                corner = splitedArray[BR_INDEX];
+                if (corner.IsIntersectOrContains(childBounds)) {
+                    corner.InsertNode(child);
+                }
+
+                corner = splitedArray[TL_INDEX];
+                if (corner.IsIntersectOrContains(childBounds)) {
+                    corner.InsertNode(child);
+                }
+
+                corner = splitedArray[TR_INDEX];
+                if (corner.IsIntersectOrContains(childBounds)) {
+                    corner.InsertNode(child);
+                }
+
+            });
+
+            children.Clear();
+
+            isSplit = true;
+
+        }
+
+        byte GetCornerID(ulong targetFullID, int depth) {
+
+            int shift = (depth) * LocationConfig.DEPTH_SHIFT;
+
+            ulong loc = targetFullID & ((ulong)LocationConfig.FULL << shift);
+
+            return (byte)(loc >> shift);
+
+        }
+
+        // ==== Remove ====
+        internal void Remove(ulong targetFullID, int depth) {
+
+            byte targetCornerID = GetCornerID(targetFullID, depth);
+            if (targetCornerID == LocationConfig.NONE || targetCornerID > LocationConfig.FULL) {
+                return;
+            }
+
+            uint targetOnlyID = (uint)(targetFullID >> 32);
+
+            if (isSplit) {
+                for (int i = 0; i < splitedArray.Length; i += 1) {
+                    var corner = splitedArray[i];
+                    if (corner != null) {
+                        if (corner.IsLeaf()) {
+                            if (corner.onlyID == targetOnlyID) {
+                                corner.SetAsBranch();
+                            }
+                        } else {
+                            corner.Remove(targetFullID, depth + 1);
+                        }
+                    }
+                }
+            }
+
+            int index = children.FindIndex(value => value.onlyID == targetOnlyID);
+            if (index != -1) {
+                children.RemoveAt(index);
+            }
+
         }
 
         // ==== Query ====
@@ -183,10 +297,12 @@ namespace FixMath.NET {
             }
 
             if (isSplit) {
-                bl.GetCandidates(bounds, candidates);
-                br.GetCandidates(bounds, candidates);
-                tl.GetCandidates(bounds, candidates);
-                tr.GetCandidates(bounds, candidates);
+                for (int i = 0; i < splitedArray.Length; i += 1) {
+                    var corner = splitedArray[i];
+                    if (corner != null) {
+                        corner.GetCandidates(bounds, candidates);
+                    }
+                }
             } else {
                 for (int i = 0; i < children.Count; i += 1) {
                     var child = children[i];

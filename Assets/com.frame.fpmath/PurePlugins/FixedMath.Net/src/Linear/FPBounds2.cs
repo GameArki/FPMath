@@ -19,6 +19,10 @@ namespace FixMath.NET {
 
         }
 
+        public bool IsIntersectOrContains(in FPBounds2 other) {
+            return IsIntersect(other) || IsContains(other);
+        }
+
         public bool IsIntersect(in FPBounds2 other) {
             return (this.min.x <= other.max.x && this.max.x >= other.min.x
                 && this.min.y <= other.max.y && this.max.y >= other.min.y);
