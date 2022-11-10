@@ -36,7 +36,7 @@ namespace JackFrame.FPMath.Sample {
         void Awake() {
             Console.SetOut(new UnityTextWriter());
             rd = new System.Random();
-            tree = new FPQuadTree<string>(width, height, 12);
+            tree = new FPQuadTree<string>(width, height, 8);
             candidates = new List<FPQuadTreeNode<string>>();
         }
 
@@ -47,6 +47,15 @@ namespace JackFrame.FPMath.Sample {
             if (Input.GetMouseButtonDown(1)) {
                 tree.Insert("1", new FPBounds2(mousePos, new FPVector2(rd.Next(sizeMin, sizeMax), rd.Next(sizeMin, sizeMax))
                 ));
+            }
+
+            if (Input.GetMouseButtonDown(2)) {
+                var node = candidates.Find(value => (value.Bounds.center - mousePos).LengthSquared() < 1000);
+                if (node != null) {
+                    tree.Remove(node.GetFullID());
+                    tree.Insert(node.Value, new FPBounds2(mousePos, node.Bounds.size));
+                }
+
             }
 
             candidates.Clear();
