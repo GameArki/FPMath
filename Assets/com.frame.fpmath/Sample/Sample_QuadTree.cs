@@ -22,8 +22,8 @@ namespace JackFrame.FPMath.Sample {
         FPQuadTree<string> tree;
 
         System.Random rd;
-        int width = 1000;
-        int height = 1000;
+        int width = 65535;
+        int height = 65535;
 
         int sizeMax = 100;
         int sizeMin = 1;
