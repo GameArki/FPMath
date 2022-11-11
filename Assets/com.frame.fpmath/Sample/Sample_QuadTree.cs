@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using FixMath.NET;
@@ -19,13 +20,13 @@ namespace JackFrame.FPMath.Sample {
         FPVector2 mousePos;
         FPVector2 mouseSize = new FPVector2(20, 20);
 
-        List<FPQuadTreeNode<string>> candidates;
+        HashSet<FPQuadTreeNode<string>> candidates;
 
         void Awake() {
             Console.SetOut(new UnityTextWriter());
             rd = new System.Random();
             tree = new FPQuadTree<string>(width, height, 8);
-            candidates = new List<FPQuadTreeNode<string>>();
+            candidates = new HashSet<FPQuadTreeNode<string>>();
         }
 
         void Update() {
@@ -38,7 +39,7 @@ namespace JackFrame.FPMath.Sample {
             }
 
             if (Input.GetMouseButtonDown(2)) {
-                var node = candidates.Find(value => (value.Bounds.Center - mousePos).LengthSquared() < 1000);
+                var node = candidates.First(value => (value.Bounds.Center - mousePos).LengthSquared() < 1000);
                 if (node != null) {
                     tree.Remove(node.GetFullID());
                     // tree.Insert(node.Value, new FPBounds2(mousePos, node.Bounds.Size));
@@ -71,12 +72,11 @@ namespace JackFrame.FPMath.Sample {
             }
 
             Gizmos.color = Color.green;
-            candidates.ForEach(value => {
+            foreach (var value in candidates) {
                 var center = value.Bounds.Center;
                 var size = value.Bounds.Size;
                 Gizmos.DrawWireCube(center.ToVector2(), size.ToVector2());
-            });
-
+            }
         }
 
     }

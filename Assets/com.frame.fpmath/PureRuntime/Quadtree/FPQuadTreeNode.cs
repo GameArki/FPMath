@@ -321,7 +321,7 @@ namespace JackFrame.FPMath {
         }
 
         // ==== Query ====
-        internal void GetCandidates(in FPBounds2 bounds, List<FPQuadTreeNode<T>> candidates) {
+        internal void GetCandidates(in FPBounds2 bounds, HashSet<FPQuadTreeNode<T>> candidates) {
 
             if (IsLeaf()) {
                 candidates.Add(this);

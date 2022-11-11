@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using FixMath.NET;
@@ -19,7 +20,7 @@ namespace JackFrame.FPMath.Sample {
 
         GameObject cube;
 
-        List<FPOctreeNode<string>> candidates;
+        HashSet<FPOctreeNode<string>> candidates;
 
         void Awake() {
             Console.SetOut(new UnityTextWriter());
@@ -28,7 +29,7 @@ namespace JackFrame.FPMath.Sample {
 
             rd = new System.Random();
             tree = new FPOctree<string>(width, height, length, 8);
-            candidates = new List<FPOctreeNode<string>>();
+            candidates = new HashSet<FPOctreeNode<string>>();
 
         }
 
@@ -46,7 +47,7 @@ namespace JackFrame.FPMath.Sample {
             }
 
             if (Input.GetMouseButtonDown(2)) {
-                var node = candidates.Find(value => (value.Bounds.Center - worldFPPos).LengthSquared() < 50);
+                var node = candidates.First(value => (value.Bounds.Center - worldFPPos).LengthSquared() < 50);
                 if (node != null) {
                     tree.Remove(node.GetFullID());
                 }
@@ -73,7 +74,7 @@ namespace JackFrame.FPMath.Sample {
 
             var worldPos = cube.transform.position;
             var worldFPPos = worldPos.ToFPVector3();
-            var size = cube.transform.localScale;
+            var cubeSize = cube.transform.localScale;
 
             Gizmos.color = Color.red;
             tree.Traval(value => {
@@ -83,18 +84,18 @@ namespace JackFrame.FPMath.Sample {
             });
 
             Gizmos.color = Color.white;
-            Gizmos.DrawWireCube(worldPos, size);
+            Gizmos.DrawWireCube(worldPos, cubeSize);
 
             if (candidates == null) {
                 return;
             }
 
             Gizmos.color = Color.green;
-            candidates.ForEach(value => {
+            foreach (var value in candidates) {
                 var center = value.Bounds.Center;
                 var size = value.Bounds.Size;
                 Gizmos.DrawWireCube(center.ToVector3(), size.ToVector3());
-            });
+            }
 
         }
 
