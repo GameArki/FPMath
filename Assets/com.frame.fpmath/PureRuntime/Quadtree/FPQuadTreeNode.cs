@@ -180,7 +180,7 @@ namespace JackFrame.FPMath {
         }
 
         // ==== Insert ====
-        internal void Insert(T valuePtr, in FPBounds2 bounds) {
+        internal FPQuadTreeNode<T> Insert(T valuePtr, in FPBounds2 bounds) {
 
             int nextDepth = depth + 1;
 
@@ -189,6 +189,8 @@ namespace JackFrame.FPMath {
             node.SetAsLeaf(valuePtr);
 
             InsertNode(node, locationID, LocationConfig.NONE, depth);
+
+            return node;
 
         }
 

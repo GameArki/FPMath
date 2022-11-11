@@ -30,8 +30,8 @@ namespace JackFrame.FPMath {
             return onlyIDRecord;
         }
 
-        public void Insert(T value, FPBounds3 bounds) {
-            root.Insert(value, bounds);
+        public FPOctreeNode<T> Insert(T value, FPBounds3 bounds) {
+            return root.Insert(value, bounds);
         }
 
         public void Remove(uint128 fullID) {
