@@ -41,8 +41,12 @@ namespace JackFrame.FPMath {
             this.root.RemoveNode(fullID);
         }
 
-        public void GetCandidates(in FPBounds2 bounds, HashSet<FPQuadTreeNode<T>> candidates) {
-            this.root.GetCandidates(bounds, candidates);
+        public void GetCandidateNodes(in FPBounds2 bounds, HashSet<FPQuadTreeNode<T>> candidates) {
+            this.root.GetCandidateNodes(bounds, candidates);
+        }
+
+        public void GetCandidateValues(in FPBounds2 bounds, HashSet<T> candidates) {
+            this.root.GetCandidateValues(bounds, candidates);
         }
 
         // ==== Internal ====

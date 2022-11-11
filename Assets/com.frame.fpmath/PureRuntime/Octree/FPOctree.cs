@@ -38,8 +38,12 @@ namespace JackFrame.FPMath {
             root.RemoveNode(fullID);
         }
 
-        public void GetCandidates(FPBounds3 bounds, HashSet<FPOctreeNode<T>> candidates) {
-            root.GetCandidates(bounds, candidates);
+        public void GetCandidateNodes(in FPBounds3 bounds, HashSet<FPOctreeNode<T>> candidates) {
+            root.GetCandidateNodes(bounds, candidates);
+        }
+
+        public void GetCandidateValues(in FPBounds3 bounds, HashSet<T> candidates) {
+            root.GetCandidateValues(bounds, candidates);
         }
 
         public void Traval(Action<FPOctreeNode<T>> action) {
