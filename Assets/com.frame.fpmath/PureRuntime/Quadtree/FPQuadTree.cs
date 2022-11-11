@@ -38,7 +38,7 @@ namespace JackFrame.FPMath {
         }
 
         public void Remove(ulong fullID) {
-            this.root.RemoveNode(fullID, 0);
+            this.root.RemoveNode(fullID);
         }
 
         public void GetCandidates(in FPBounds2 bounds, List<FPQuadTreeNode<T>> candidates) {
