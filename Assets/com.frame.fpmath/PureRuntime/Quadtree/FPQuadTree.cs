@@ -25,6 +25,7 @@ namespace JackFrame.FPMath {
 
             var bounds = new FPBounds2(FPVector2.Zero, new FPVector2(worldWidth, worldHeight));
             this.root = new FPQuadTreeNode<T>(this, bounds, 0);
+            this.root.SetAsRoot();
         }
 
         // ==== API ====
@@ -37,7 +38,7 @@ namespace JackFrame.FPMath {
         }
 
         public void Remove(ulong fullID) {
-            this.root.Remove(fullID, 0);
+            this.root.RemoveNode(fullID);
         }
 
         public void GetCandidates(in FPBounds2 bounds, List<FPQuadTreeNode<T>> candidates) {
