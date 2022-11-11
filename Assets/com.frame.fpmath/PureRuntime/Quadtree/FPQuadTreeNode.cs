@@ -321,7 +321,7 @@ namespace JackFrame.FPMath {
         }
 
         // ==== Query ====
-        internal void GetCandidates(in FPBounds2 bounds, HashSet<FPQuadTreeNode<T>> candidates) {
+        internal void GetCandidateNodes(in FPBounds2 bounds, HashSet<FPQuadTreeNode<T>> candidates) {
 
             if (IsLeaf()) {
                 candidates.Add(this);
@@ -336,7 +336,7 @@ namespace JackFrame.FPMath {
                 for (int i = 0; i < splitedArray.Length; i += 1) {
                     var corner = splitedArray[i];
                     if (corner != null) {
-                        corner.GetCandidates(bounds, candidates);
+                        corner.GetCandidateNodes(bounds, candidates);
                     }
                 }
             }
@@ -344,7 +344,36 @@ namespace JackFrame.FPMath {
             if (children.Count > 0) {
                 foreach (var kv in children) {
                     var child = kv.Value;
-                    child.GetCandidates(bounds, candidates);
+                    child.GetCandidateNodes(bounds, candidates);
+                }
+            }
+
+        }
+
+        internal void GetCandidateValues(in FPBounds2 bounds, HashSet<T> candidates) {
+
+            if (IsLeaf()) {
+                candidates.Add(Value);
+                return;
+            } else {
+                if (!IsIntersectOrContains(bounds)) {
+                    return;
+                }
+            }
+
+            if (isSplit) {
+                for (int i = 0; i < splitedArray.Length; i += 1) {
+                    var corner = splitedArray[i];
+                    if (corner != null) {
+                        corner.GetCandidateValues(bounds, candidates);
+                    }
+                }
+            }
+
+            if (children.Count > 0) {
+                foreach (var kv in children) {
+                    var child = kv.Value;
+                    child.GetCandidateValues(bounds, candidates);
                 }
             }
 

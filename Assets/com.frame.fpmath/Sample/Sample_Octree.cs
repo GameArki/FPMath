@@ -54,7 +54,7 @@ namespace JackFrame.FPMath.Sample {
             }
 
             candidates.Clear();
-            tree.GetCandidates(new FPBounds3(worldFPPos, size), candidates);
+            tree.GetCandidateNodes(new FPBounds3(worldFPPos, size), candidates);
 
         }
 
