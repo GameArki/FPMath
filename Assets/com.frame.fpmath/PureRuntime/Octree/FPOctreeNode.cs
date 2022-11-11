@@ -207,7 +207,7 @@ namespace JackFrame.FPMath {
         }
 
         // ==== Insert ====
-        internal void Insert(T valuePtr, in FPBounds3 bounds) {
+        internal FPOctreeNode<T> Insert(T valuePtr, in FPBounds3 bounds) {
 
             int nextDepth = depth + 1;
 
@@ -216,7 +216,7 @@ namespace JackFrame.FPMath {
             node.SetAsLeaf(valuePtr);
 
             InsertNode(node, locationID, LocationConfig.NONE, depth);
-
+            return node;
         }
 
         void InsertNode(FPOctreeNode<T> node, ulong parentLocationID, byte cornerID, int parentDepth) {

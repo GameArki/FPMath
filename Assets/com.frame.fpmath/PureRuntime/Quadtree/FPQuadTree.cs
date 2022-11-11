@@ -33,8 +33,8 @@ namespace JackFrame.FPMath {
             root.Traval(action);
         }
 
-        public void Insert(T valuePtr, in FPBounds2 bounds) {
-            this.root.Insert(valuePtr, bounds);
+        public FPQuadTreeNode<T> Insert(T valuePtr, in FPBounds2 bounds) {
+            return root.Insert(valuePtr, bounds);
         }
 
         public void Remove(ulong fullID) {
