@@ -42,7 +42,7 @@ namespace JackFrame.FPMath {
 
         // ==== Info ====
         uint locationID;
-        public void SetLocationID(uint value) => locationID = value;
+        void SetLocationID(uint value) => locationID = value;
 
         uint onlyID;
         public ulong GetFullID() => ((ulong)onlyID << 32) | (ulong)locationID;
@@ -54,8 +54,7 @@ namespace JackFrame.FPMath {
         public FPBounds2 Bounds => bounds;
 
         int depth;
-        public int Depth => depth;
-        public void SetDepth(int value) => depth = value;
+        void SetDepth(int value) => depth = value;
 
         bool isSplit;
 
@@ -75,8 +74,7 @@ namespace JackFrame.FPMath {
         }
 
         internal void SetAsRoot() {
-            SetLocationID(GenBranchLocationID(0, LocationConfig.FULL, -1));
-            onlyID = Tree.GenOnlyID();
+            this.locationID = LocationConfig.FULL;
         }
 
         // ==== Generic ====
@@ -308,8 +306,6 @@ namespace JackFrame.FPMath {
                 return;
             }
 
-            uint targetLocationID = GetLocationIDFromFullID(targetFullID);
-
             uint targetOnlyID = (uint)(targetFullID >> 32);
 
             _ = children.Remove(targetOnlyID);
@@ -341,7 +337,9 @@ namespace JackFrame.FPMath {
                         corner.GetCandidates(bounds, candidates);
                     }
                 }
-            } else {
+            }
+
+            if (children.Count > 0) {
                 foreach (var kv in children) {
                     var child = kv.Value;
                     child.GetCandidates(bounds, candidates);
@@ -349,6 +347,8 @@ namespace JackFrame.FPMath {
             }
 
         }
+
+        // TODO: GetCandidates By FullID
 
     }
 

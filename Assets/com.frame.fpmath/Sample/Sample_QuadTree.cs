@@ -5,18 +5,6 @@ using FixMath.NET;
 
 namespace JackFrame.FPMath.Sample {
 
-    public class UnityTextWriter : System.IO.TextWriter {
-
-        public override void WriteLine(string value) {
-            Debug.Log(value);
-        }
-
-        public override System.Text.Encoding Encoding {
-            get { return System.Text.Encoding.UTF8; }
-        }
-
-    }
-
     public class Sample_QuadTree : MonoBehaviour {
 
         FPQuadTree<string> tree;
@@ -43,10 +31,10 @@ namespace JackFrame.FPMath.Sample {
         void Update() {
 
             var worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            mousePos = new FPVector2(FP64.ToFP64(worldPos.x), FP64.ToFP64(worldPos.y));
+            mousePos = worldPos.ToFPVector2();
             if (Input.GetMouseButtonDown(1)) {
-                tree.Insert("1", new FPBounds2(mousePos, new FPVector2(rd.Next(sizeMin, sizeMax), rd.Next(sizeMin, sizeMax))
-                ));
+                var randomSize = new FPVector2(rd.Next(sizeMin, sizeMax), rd.Next(sizeMin, sizeMax));
+                tree.Insert("1", new FPBounds2(mousePos, randomSize));
             }
 
             if (Input.GetMouseButtonDown(2)) {
@@ -72,11 +60,11 @@ namespace JackFrame.FPMath.Sample {
             tree.Traval(value => {
                 var center = value.Bounds.Center;
                 var size = value.Bounds.Size;
-                Gizmos.DrawWireCube(new Vector3(center.x.AsFloat(), center.y.AsFloat()), new Vector3(size.x.AsFloat(), size.y.AsFloat()));
+                Gizmos.DrawWireCube(center.ToVector2(), size.ToVector2());
             });
 
             Gizmos.color = Color.white;
-            Gizmos.DrawWireCube(new Vector3(mousePos.x.AsFloat(), mousePos.y.AsFloat()), new Vector3(mouseSize.x.AsFloat(), mouseSize.y.AsFloat()));
+            Gizmos.DrawWireCube(mousePos.ToVector2(), mouseSize.ToVector2());
 
             if (candidates == null) {
                 return;
@@ -86,7 +74,7 @@ namespace JackFrame.FPMath.Sample {
             candidates.ForEach(value => {
                 var center = value.Bounds.Center;
                 var size = value.Bounds.Size;
-                Gizmos.DrawWireCube(new Vector3(center.x.AsFloat(), center.y.AsFloat()), new Vector3(size.x.AsFloat(), size.y.AsFloat()));
+                Gizmos.DrawWireCube(center.ToVector2(), size.ToVector2());
             });
 
         }
