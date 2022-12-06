@@ -739,6 +739,12 @@ namespace FixMath.NET {
             }
         }
 
+        public static FPQuaternion LookAtHorizontal(FPVector3 dirNormalized) {
+            FP64 angle = FPVector3.SignedAngle(FPVector3.Forward, dirNormalized, FPVector3.Up);
+            var rot = FPQuaternion.CreateFromAxisAngle(FPVector3.Up, angle * FP64.Deg2Rad);
+            return rot;
+        }
+
         /// <summary>
         /// Computes the quaternion rotation between two normalized vectors.
         /// </summary>
