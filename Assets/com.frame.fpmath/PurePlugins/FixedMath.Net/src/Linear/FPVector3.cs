@@ -257,7 +257,8 @@ namespace FixMath.NET {
         public static FP64 SignedAngle(FPVector3 from, FPVector3 to, FPVector3 axis) {
             FPVector3 fromNorm = from.normalized, toNorm = to.normalized;
             FP64 unsignedAngle = FP64.Acos(FP64.Clamp(Dot(fromNorm, toNorm), -FP64.One, FP64.One)) * FP64.Rad2Deg;
-            FP64 sign = FP64.Sign(Dot(axis, Cross(fromNorm, toNorm)));
+            FP64 sign = Dot(axis, Cross(fromNorm, toNorm));
+            sign = sign > 0 ? 1 : -1;
             return unsignedAngle * sign;
         }
 
