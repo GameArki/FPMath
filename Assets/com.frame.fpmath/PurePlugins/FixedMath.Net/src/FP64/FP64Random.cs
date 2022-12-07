@@ -2,11 +2,11 @@
 
 namespace FixMath.NET
 {
-	public class Fix64Random
+	public class FP64Random
     {
         private Random random;
 
-        public Fix64Random(int seed)
+        public FP64Random(int seed)
         {
             random = new Random(seed);
         }

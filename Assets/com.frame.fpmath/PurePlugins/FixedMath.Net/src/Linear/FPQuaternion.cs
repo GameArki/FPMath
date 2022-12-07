@@ -755,7 +755,7 @@ namespace FixMath.NET {
             FP64 dot;
             FPVector3.Dot(ref v1, ref v2, out dot);
             //For non-normal vectors, the multiplying the axes length squared would be necessary:
-            //Fix64 w = dot + (Fix64)Math.Sqrt(v1.LengthSquared() * v2.LengthSquared());
+            //FP64 w = dot + (FP64)Math.Sqrt(v1.LengthSquared() * v2.LengthSquared());
             if (dot < F64.Cm0p9999) //parallel, opposing direction
             {
                 //If this occurs, the rotation required is ~180 degrees.

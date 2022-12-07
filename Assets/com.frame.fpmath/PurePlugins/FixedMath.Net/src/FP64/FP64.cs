@@ -65,7 +65,7 @@ namespace FixMath.NET {
         const int LUT_SIZE = (int)(PI_OVER_2 >> 15);
 
         /// <summary>
-        /// Returns a number indicating the sign of a Fix64 number.
+        /// Returns a number indicating the sign of a FP64 number.
         /// Returns 1 if the value is positive, 0 if is 0, and -1 if it is negative.
         /// </summary>
         public static int SignI(FP64 value) {
@@ -85,8 +85,8 @@ namespace FixMath.NET {
 
 
         /// <summary>
-        /// Returns the absolute value of a Fix64 number.
-        /// Note: Abs(Fix64.MinValue) == Fix64.MaxValue.
+        /// Returns the absolute value of a FP64 number.
+        /// Note: Abs(FP64.MinValue) == FP64.MaxValue.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FP64 Abs(FP64 value) {
@@ -285,7 +285,7 @@ namespace FixMath.NET {
             if (((~(xl ^ yl) & (xl ^ sum)) & MIN_VALUE) != 0) {
                 sum = xl > 0 ? MAX_VALUE : MIN_VALUE;
             }
-            return new Fix64(sum);
+            return new FP64(sum);
 #else
             return new FP64(x.RawValue + y.RawValue);
 #endif
@@ -316,7 +316,7 @@ namespace FixMath.NET {
             if ((((xl ^ yl) & (xl ^ diff)) & MIN_VALUE) != 0) {
                 diff = xl < 0 ? MIN_VALUE : MAX_VALUE;
             }
-            return new Fix64(diff);
+            return new FP64(diff);
 #else
             return new FP64(x.RawValue - y.RawValue);
 #endif
@@ -413,7 +413,7 @@ namespace FixMath.NET {
                 }
             }
 
-            return new Fix64(sum);
+            return new FP64(sum);
 #else
             var xl = x.RawValue;
             var yl = y.RawValue;

@@ -24,7 +24,7 @@
         public static readonly FP64 PiOver4 = FP64.Pi / new FP64(4);
 
         /// <summary>
-        /// Calculate remainder of of Fix64 division using same algorithm
+        /// Calculate remainder of of FP64 division using same algorithm
         /// as Math.IEEERemainder
         /// </summary>
         /// <param name="dividend">Dividend</param>
