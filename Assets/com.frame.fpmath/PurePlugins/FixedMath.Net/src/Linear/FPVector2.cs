@@ -139,6 +139,45 @@ namespace FixMath.NET {
             return a.x * b.x + a.y * b.y;
         }
 
+        public static FPVector2 Project(in FPVector2 vector, in FPVector2 onNormal) {
+            FP64 num = Dot(onNormal, onNormal);
+            bool flag = num < FP64.Epsilon;
+            FPVector2 result;
+            if (flag) {
+                result = FPVector2.Zero;
+            } else {
+                FP64 num2 = Dot(vector, onNormal);
+                result = new FPVector2(onNormal.x * num2 / num, onNormal.y * num2 / num);
+            }
+            return result;
+        }
+
+        public static FPVector2 GetRotated(FPVector2 src, FP64 addDegree) {
+            if (addDegree == 0) return src;
+            var rad = addDegree * FP64.Deg2Rad;
+            var sinVal = FP64.Sin(rad);
+            var cosVal = FP64.Cos(rad);
+            var x0 = src.x * cosVal - src.y * sinVal;
+            var y0 = src.x * sinVal + src.y * cosVal;
+            return new FPVector2((FP64)x0, (FP64)y0);
+        }
+
+        public static bool IsInVectorRightSide(FPVector2 src, FPVector2 tar) {
+            // 前提: 同一个直角坐标系
+            //   定义：平面上的三点P1(x1,y1),P2(x2,y2),P3(x3,y3)的面积量：
+            // S(P1,P2,P3)=|y1 y2 y3|= (x1-x3)*(y2-y3)-(y1-y3)*(x2-x3)
+            // 当P1P2P3逆时针时S为正的，当P1P2P3顺时针时S为负的。
+            // 令向量的起点为A，终点为B，判断的点为C
+            float x1 = 0;
+            float y1 = 0;
+            var srcX = src.x;
+            var srcY = src.y;
+            var tarX = tar.x;
+            var tarY = tar.y;
+            float value = (x1 - tarX) * (srcY - tarY) - (y1 - tarY) * (srcX - tarX);
+            return value < 0;
+        }
+
         /// <summary>
         /// Gets the zero vector.
         /// </summary>
