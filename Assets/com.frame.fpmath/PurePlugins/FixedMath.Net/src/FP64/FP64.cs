@@ -236,14 +236,11 @@ namespace FixMath.NET {
             return a > b ? b : a;
         }
 
-        public static FP64 Min(FP64[] nums)
-        {
+        public static FP64 Min(ReadOnlySpan<FP64> nums) {
             FP64 min = nums[0];
-            for (int i = 1; i < nums.Length; i++)
-            {
+            for (int i = 1; i < nums.Length; i++) {
                 var n = nums[i];
-                if (n < min)
-                {
+                if (n < min) {
                     min = n;
                 }
             }
@@ -254,15 +251,12 @@ namespace FixMath.NET {
         public static FP64 Max(in FP64 a, in FP64 b) {
             return a > b ? a : b;
         }
-        
-        public static FP64 Max(FP64[] nums)
-        {
+
+        public static FP64 Max(ReadOnlySpan<FP64> nums) {
             FP64 max = nums[0];
-            for (int i = 1; i < nums.Length; i++)
-            {
+            for (int i = 1; i < nums.Length; i++) {
                 var n = nums[i];
-                if (n > max)
-                {
+                if (n > max) {
                     max = n;
                 }
             }
