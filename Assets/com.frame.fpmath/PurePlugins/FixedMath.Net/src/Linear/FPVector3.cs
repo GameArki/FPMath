@@ -110,13 +110,16 @@ namespace FixMath.NET {
         /// </summary>
         public void Normalize() {
             FP64 sqrt = FP64.Sqrt(x * x + y * y + z * z);
-            if (sqrt == FP64.Zero) {
-                throw new ArgumentOutOfRangeException("Too small value,Can't Normalize");
+            if (sqrt < FP64.Epsilon) {
+                x = FP64.Zero;
+                y = FP64.Zero;
+                z = FP64.Zero;
+            } else {
+                FP64 inverse = F64.C1 / sqrt;
+                x *= inverse;
+                y *= inverse;
+                z *= inverse;
             }
-            FP64 inverse = F64.C1 / sqrt;
-            x *= inverse;
-            y *= inverse;
-            z *= inverse;
         }
 
         public FPVector3 normalized {

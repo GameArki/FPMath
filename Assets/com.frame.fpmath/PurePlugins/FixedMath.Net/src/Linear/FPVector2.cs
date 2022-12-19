@@ -309,9 +309,15 @@ namespace FixMath.NET {
         /// Normalizes the vector.
         /// </summary>
         public void Normalize() {
-            FP64 inverse = F64.C1 / FP64.Sqrt(x * x + y * y);
-            x *= inverse;
-            y *= inverse;
+            FP64 magnitude = FP64.Sqrt(x * x + y * y);
+            if (magnitude < FP64.Epsilon) {
+                x = 0;
+                y = 0;
+            } else {
+                FP64 inverse = F64.C1 / magnitude;
+                x *= inverse;
+                y *= inverse;
+            }
         }
 
         /// <summary>
